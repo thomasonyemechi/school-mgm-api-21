@@ -200,7 +200,5 @@ class ResultController extends Controller
             'status' => true,
         ], 200);
 
-        // if(!checkUserSchool($class->school_id)){ return response( bidMisMatchRes() ); }
-
     }
 }

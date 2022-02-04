@@ -37,6 +37,10 @@ Route::get('/get_school_info/{school_id}', function ($school_id) {
 
 
 
+Route::get('/transaction/range/{from?}/{to?}', [BillController::class, 'fetchDateRangeFee']);
+
+
+
 
 
 
@@ -180,6 +184,16 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::get('/get_student_payment_per_session/{student_id}/{session_id}', [BillController::class, 'fetchSessionPaymentPerStudent']);
 
     Route::get('/get_fee_payment_history_per_term/{fee_id}/{term_id}', [BillController::class, 'fetchTermPaymentPerFeeCategory']);
+
+
+    //fetch transactions
+    Route::get('/transaction/daily/{day}', [BillController::class, 'fetchDailyFeeTransaction']);
+    Route::get('/transaction/weekly/{week}', [BillController::class, 'fetchWeeklyTransaction']);
+    Route::get('/transaction/termly/{term?}', [BillController::class, 'fetchTermlyTransaction']);
+    Route::get('/transaction/range/{from?}/{to?}', [BillController::class, 'fetchDateRangeFee']);
+
+
+
 
 
 

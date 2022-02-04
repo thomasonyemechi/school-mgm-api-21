@@ -8,12 +8,77 @@ use App\Models\Payment;
 use App\Models\Session;
 use App\Models\Student;
 use App\Models\Term;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class BillController extends Controller
 {
 
+    function getStartAndEndDate($week, $year) {
+        $dto = new DateTime();
+        $dto->setISODate($year, $week);
+        $ret['week_start'] = $dto->format('Y-m-d');
+        $dto->modify('+6 days');
+        $ret['week_end'] = $dto->format('Y-m-d');
+        return $ret;
+    }
+
+
+
+    function fetchDateRangeFee($from, $to){
+        $start = strtotime($from);
+        $end = strtotime($to)+(86400-1);
+        $payments = Payment::with(['fee_cat:id,fee', 'student:id,surname,firstname', 'class:id,class', 'term:id,term', 'creator:id,name'])
+        ->where(['school_id' => auth()->user()->id ])->whereBetween('ctime', [$start, $end])->orderBy('id', 'desc')->paginate(200);
+        return response([
+            'data' => $payments,
+            'date' => date('j M, Y', $start).' to '. date('j M, Y', $end).'',
+        ]);
+    }
+
+
+
+    function fetchTermlyTransaction($term_id=0) {
+        $term = ($term_id == 0) ? currentActiveTerm() : Term::find($term_id);
+        $payments = Payment::with(['fee_cat:id,fee', 'student:id,surname,firstname', 'class:id,class', 'term:id,term', 'creator:id,name'])
+        ->where(['term_id' => $term->id, 'school_id' => auth()->user()->id ])->orderBy('id', 'desc')->paginate(200);
+        return response([
+            'data' => $payments,
+            'date' => $term->session->session.' '.term_text($term->term).'',
+        ]);
+    }
+
+
+
+    function fetchWeeklyTransaction($week) {
+        $week_array = $this->getStartAndEndDate($week,date('Y'));
+        $start = strtotime($week_array['week_start']);
+        $end = strtotime($week_array['week_end'])+(86400-1);
+        $payments = Payment::with(['fee_cat:id,fee', 'student:id,surname,firstname', 'class:id,class', 'term:id,term', 'creator:id,name'])
+        ->where(['school_id' => auth()->user()->id ])->whereBetween('ctime', [$start, $end])->orderBy('id', 'desc')->paginate(200);
+        return response([
+            'data' => $payments,
+            'date' => date('j M, Y', $start).' to '. date('j M, Y', $end).' (Week '.$week.')',
+        ]);
+    }
+
+
+    function fetchDailyFeeTransaction($day) {
+        $start = strtotime($day);
+        $end = $start+(86400-1);
+
+        $payments = Payment::with(['fee_cat:id,fee', 'student:id,surname,firstname', 'class:id,class', 'term:id,term', 'creator:id,name'])
+        ->where(['school_id' => auth()->user()->id ])->whereBetween('ctime', [$start, $end])->orderBy('id', 'desc')->paginate(100);
+        return response([
+            'data' => $payments,
+            'date' => date('j M, Y', $end),
+        ]);
+    }
+
+
+
+    ////fee summarry for a single student
     function fetchTermFeeSummary($student_id, $term_id=0) {
         if($term_id == 0) { $term_id = currentActiveTerm()->id; }
         $a = $this->calculateBalanceBroughtFwd($student_id, $term_id);
@@ -163,6 +228,8 @@ class BillController extends Controller
             'total' => $request->amount,
             'amount' => 0,
             'discount' => 0,
+            'ctime' => time(),
+            'creator' => auth()->user()->id,
             'type' => 5
         ]);
         return response([
@@ -293,6 +360,8 @@ class BillController extends Controller
 
         if(count($students) == 0) { return response(['message' => 'There are no students in this class'], 422);  }
 
+        $ctime = time();
+
         foreach($students as $student){
             ////fee index .... fee_cat_id.term_id.student_id
             $fee_index = $fee_cat->id.$current_term.$student->id;
@@ -309,6 +378,8 @@ class BillController extends Controller
                     'amount' => $request->amount,
                     'total' => -$request->amount,
                     'discount' => 0,
+                    'ctime' => time(),
+                    'creator' => auth()->user()->id,
                     'type' => 1
                 ]);
             }

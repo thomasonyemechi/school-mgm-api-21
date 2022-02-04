@@ -10,7 +10,7 @@ class Payment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'school_id', 'term_id', 'fee_id', 'fee_index', 'class_id', 'student_id', 'amount', 'discount', 'total', 'type'
+        'school_id', 'ctime', 'creator', 'term_id', 'fee_id', 'fee_index', 'class_id', 'student_id', 'amount', 'discount', 'total', 'type'
     ];
 
 
@@ -33,5 +33,10 @@ class Payment extends Model
     function student()
     {
         return $this->belongsTo(Student::class, 'student_id');
+    }
+
+
+    function creator() {
+        return $this->belongsTo(User::class, 'creator');
     }
 }
