@@ -38,6 +38,8 @@ Route::get('/get_school_info/{school_id}', function ($school_id) {
 
 
 Route::get('/transaction/range/{from?}/{to?}', [BillController::class, 'fetchDateRangeFee']);
+Route::get('/result/{student_id}', [ResultController::class, 'currentTermResult']);
+
 
 
 
@@ -51,7 +53,6 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
 
 
 
-    Route::get('/mutiplyuser', [\App\Http\Controllers\StaffController::class, 'mutiplyuser']);
 
 
     /*
@@ -205,10 +206,23 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
 
     Route::post('/assign_subject_to_teacher', [ResultController::class, 'assignSubjectToTeacher']);
     Route::post('/remove_assigned_subject', [ResultController::class, 'removeAssignedSubject']);
+    Route::get('/assign_subject_req', [ResultController::class, 'requirments']);
 
     Route::get('/fetch_subject_teacher', [ResultController::class, 'fetchSubjectTeachers']);
     Route::get('/fetch_subject_teacher/{class_id}', [ResultController::class, 'fetchSubjectTeachersByClass']);
     Route::get('/fetch_teacher_subject/{teacher_id}', [ResultController::class, 'fetchTeacherSubject']);
+
+    //res
+    Route::post('/start_result', [ResultController::class, 'startResult']);
+    Route::post('/update/student/result', [ResultController::class, 'editStudentResult']);
+    Route::post('/update/student/result/all', [ResultController::class, 'editMultipleResult']);
+    Route::get('/load/program/{program}', [ResultController::class, 'loadResult']);
+    Route::get('/broad/{program}', [ResultController::class, 'fetchSessionBroadSheet']);
+
+    Route::post('/update_ca', [ResultController::class, 'updateCa']);
+    Route::get('/ca', [ResultController::class, 'Ca']);
+    Route::get('/results/{student_id}', [ResultController::class, 'studentResults']);
+
 
 
     /*
@@ -220,6 +234,12 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::get('/class_fee/{class_id}/{term_id?}', [MiscellaneousController::class, 'fetchClassFee']);
     Route::get('/class_payment/{class_id}/{term_id?}', [MiscellaneousController::class, 'fetchClassPayments']);
     Route::get('/class_teachers/{class_id}', [MiscellaneousController::class, 'fetchClassTeachers']);
+
+    //permissions power access fetchUserPermission
+    Route::get('/users/permission', [StaffController::class, 'fetchUserPermission']);
+    Route::post('/permission/update', [StaffController::class, 'updateSinglePermission']);
+    Route::post('/permission/update_all', [StaffController::class, 'updatePermissionAll']);
+
 
 
 

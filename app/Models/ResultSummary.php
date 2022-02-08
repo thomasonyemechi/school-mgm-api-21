@@ -11,7 +11,7 @@ class ResultSummary extends Model
 
 
     protected $fillable = [
-        'school_id', 'term_id', 'class_id','result_index', 'student_id', 'principal_remark', 'teacher_remark', 'locomotive'
+        'school_id', 'session_id', 'term_id', 'class_id','result_index', 'student_id', 'principal_remark', 'teacher_remark', 'locomotive'
     ];
 
     function student()
@@ -29,8 +29,18 @@ class ResultSummary extends Model
         return $this->belongsTo(School::class, 'school_id');
     }
 
-    function result()
+    function class()
     {
-        return $this->hasMany(Result::class, 'reslut_id');
+        return $this->belongsTo(ClassCore::class, 'class_id');
+    }
+
+    function session()
+    {
+        return $this->belongsTo(Session::class, 'session_id');
+    }
+
+    function results()
+    {
+        return $this->hasMany(Result::class, 'result_id');
     }
 }

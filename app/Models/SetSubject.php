@@ -17,13 +17,13 @@ class SetSubject extends Model
 
     public function subject()
     {
-        return $this->belongsTo(Subject::class, 'class_id');
+        return $this->belongsTo(Subject::class, 'subject_id');
     }
 
 
     public function class()
     {
-        return $this->belongsTo(ClassCore::class. 'class_id');
+        return $this->belongsTo(ClassCore::class, 'class_id');
     }
 
 

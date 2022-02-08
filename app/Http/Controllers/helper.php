@@ -2,24 +2,24 @@
 use App\Models\Term;
 
 
-function currentActiveTerm()
-{
-    $sessions = auth()->user()->school->sessions;
-    foreach($sessions as $sess)
-    {
-        foreach($sess->terms as $term){
-            if($term->status == 1) { $current_term = $term; }
-        }
-    }
-    return $current_term ?? '';
-}
-
-
 // function currentActiveTerm()
 // {
-//     $term = Term::where(['school_id' => auth()->user()->school_id, 'status' => 1])->get();
-//     return $term ?? '';
+//     $sessions = auth()->user()->school->sessions;
+//     foreach($sessions as $sess)
+//     {
+//         foreach($sess->terms as $term){
+//             if($term->status == 1) { $current_term = $term; }
+//         }
+//     }
+//     return $current_term ?? '';
 // }
+
+
+function currentActiveTerm()
+{
+    $term = Term::with(['session:id,session'])->where(['school_id' => auth()->user()->school_id, 'status' => 1])->first();
+    return $term ?? [];
+}
 
 
 function walletProcess()

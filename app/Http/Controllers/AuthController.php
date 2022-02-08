@@ -55,9 +55,12 @@ class AuthController extends Controller
             return response(['message' => 'Invalid Credentials'], 401);
         }
         $accessToken = auth()->user()->createToken('authToken')->accessToken;
+        $user = auth()->user();
+        $user['permission'] = $user->permission;
+        $user['school'] = $user->school;
         $data = [
-            'user' => auth()->user(),
-            'school' => auth()->user()->school
+            'user' => $user,
+            'term' => currentActiveTerm()
         ];
         return response(['data' => $data, 'message' => 'Login successfull' , 'access_token' => $accessToken], 200);
     }

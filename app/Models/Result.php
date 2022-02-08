@@ -24,6 +24,14 @@ class Result extends Model
         return $this->belongsTo(ClassCore::class, 'class_id');
     }
 
+    function term()
+    {
+        return $this->belongsTo(Term::class, 'term_id');
+    }
+
+    function student() {
+        return $this->belongsTo(Student::class, 'student_id');
+    }
 
 
     function summary()

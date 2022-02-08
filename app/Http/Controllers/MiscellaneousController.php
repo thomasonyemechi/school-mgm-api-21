@@ -58,8 +58,8 @@ class MiscellaneousController extends Controller
 
 
     function fetchClassPayments($class_id, $term_id=0) {
-        if($term_id == 0){ $term_id = currentActiveTerm()->id; }
-        $payments = Payment::with(['student:id,surname,firstname', 'fee:id,fee'])->where(['class_id' => $class_id, 'type' => 5, 'term_id' => $term_id])
+        $term = currentActiveTerm();
+        $payments = Payment::with(['student:id,surname,firstname', 'fee_cat:id,fee'])->where(['class_id' => $class_id, 'type' => 5, 'term_id' => $term->id])
         ->orderby('id', 'desc')->paginate(100);
         $class = ClassCore::find($class_id);
         $data = [
@@ -67,14 +67,15 @@ class MiscellaneousController extends Controller
             'class' => $class
         ];
         return response([
-            'data' => $data
+            'data' => $data,
+            'cap' => $class->class.' '.term_text($term->term).' '. $term->session->session,
         ], 200);
     }
 
 
     function fetchClassFee($class_id, $term_id=0){
-        if($term_id == 0){ $term_id = currentActiveTerm()->id; }
-        $fees = Payment::with(['student:id,surname,firstname', 'fee_cat:id,fee'])->where(['class_id' => $class_id, 'type' => 1, 'term_id' => $term_id])
+        $term = currentActiveTerm();
+        $fees = Payment::with(['student:id,surname,firstname', 'fee_cat:id,fee'])->where(['class_id' => $class_id, 'type' => 1, 'term_id' => $term->id])
         ->orderby('fee_id', 'desc')->paginate(100);
         $class = ClassCore::find($class_id);
         $data = [
@@ -82,7 +83,8 @@ class MiscellaneousController extends Controller
             'class' => $class
         ];
         return response([
-            'data' => $data
+            'data' => $data,
+            'cap' => $class->class.' '.term_text($term->term).' '. $term->session->session,
         ], 200);
     }
 

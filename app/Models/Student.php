@@ -49,6 +49,6 @@ class Student extends Model
 
     function results()
     {
-        return $this->belongsTo(ResultSummary::class, 'student_id');
+        return $this->hasMany(ResultSummary::class, 'student_id');
     }
 }

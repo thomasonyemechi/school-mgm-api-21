@@ -69,4 +69,9 @@ class School extends Model
         $this->hasMany(FeeCategory::class, 'school_id');
     }
 
+    function result_setup()
+    {
+        return $this->hasOne(ResultSetup::class, 'school_id');
+    }
+
 }
