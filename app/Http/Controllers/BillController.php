@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Validator;
 
 class BillController extends Controller
 {
+    // id type amount 
 
     function getStartAndEndDate($week, $year) {
         $dto = new DateTime();
