@@ -220,6 +220,7 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::get('/broad/{program}', [ResultController::class, 'fetchSessionBroadSheet']);
 
     Route::post('/update_ca', [ResultController::class, 'updateCa']);
+    Route::post('/update/subject_remark', [ResultController::class, 'subjectRemarkUpdate']);
     Route::get('/ca', [ResultController::class, 'Ca']);
     Route::get('/results/{student_id}', [ResultController::class, 'studentResults']);
 

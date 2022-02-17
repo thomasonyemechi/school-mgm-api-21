@@ -18,14 +18,68 @@ use Illuminate\Support\Facades\Validator;
 class ResultController extends Controller
 {
 
+    function subjectRemarkUpdate(Request $request)
+    {
+        $val = Validator::make($request->all(), [
+            'data' => 'required'
+        ]);
+        if ($val->fails()){ return response(['errors'=>$val->errors()->all()], 422);}
+        $new = [];
+        foreach($request->data as $rem) {
+            $new [] = [
+                'grade' => $rem['grade'],
+                'score' => $rem['score'],
+                'remark' => $rem['remark']
+            ];
+        }
+        ResultSetup::where('school_id', auth()->user()->school_id)->update([
+            'remarks' => json_encode($new)
+        ]);
+
+        return response([
+            'message' => 'Remarks updated sucessfully'
+        ], 200);
+    }
+
+
+
     function currentTermResult($students_id)
     {
-        $student = Student::find($students_id);
-        $term = Term::find(14); //currentActiveTerm();
-        $sum = Result::where(['term_id' => $term->id, 'student_id' => $student->id])->first();
+        $student = Student::find($students_id); $subjects = []; $term_id = 14;
+        $term = Term::find($term_id); //currentActiveTerm();
+        $sum = ResultSummary::where(['term_id' => $term->id, 'student_id' => $student->id])->first();
         foreach($sum->results as $res) {
-            print_r($res);
+            $data = [
+                'subject' => $res->subject->subject,
+                't1' => $res->t1,
+                't2' => $res->t2,
+                't3' => $res->t3,
+                'exam' => $res->exam,
+                'total' => $res->total,
+                'cla_avr' => $this->subject_classaverage($res->subject_id, $term_id),
+                'remark' => '',
+                'min' => '',
+                'max' => '',
+            ];
+            $subjects[] = $data;
         }
+
+
+        return $subjects;
+    }
+
+
+    function subject_classaverage($subject_id, $term_id) {
+        $count_student = Result::where(['term_id' => $term_id, 'subject_id' => $subject_id, ['total', '>', 0]])->count();
+        $total_score = Result::where(['term_id' => $term_id, 'subject_id' => $subject_id])->sum('total');
+        return $total_score/$count_student;
+    }
+
+    function previosuTermSubjectScoreCum($student_id, $term_id){
+        $term = Term::find($term_id);
+        if($term->)
+
+
     }
 
 

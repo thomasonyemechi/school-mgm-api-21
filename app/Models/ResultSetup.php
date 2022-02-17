@@ -10,7 +10,7 @@ class ResultSetup extends Model
     use HasFactory;
 
     protected $fillable = [
-        'school_id', 'ca1', 'ca2', 'ca3', 'exam'
+        'school_id', 'ca1', 'ca2', 'ca3', 'exam', 'remarks'
     ];
 
     function school() {
