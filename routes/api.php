@@ -38,7 +38,6 @@ Route::get('/get_school_info/{school_id}', function ($school_id) {
 
 
 Route::get('/transaction/range/{from?}/{to?}', [BillController::class, 'fetchDateRangeFee']);
-Route::get('/result/{student_id}', [ResultController::class, 'currentTermResult']);
 
 
 
@@ -223,6 +222,9 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::post('/update/subject_remark', [ResultController::class, 'subjectRemarkUpdate']);
     Route::get('/ca', [ResultController::class, 'Ca']);
     Route::get('/results/{student_id}', [ResultController::class, 'studentResults']);
+
+Route::get('/result/{student_id}', [ResultController::class, 'currentTermResult']);
+
 
 
 

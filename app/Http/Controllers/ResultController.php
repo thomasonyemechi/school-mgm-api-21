@@ -45,41 +45,133 @@ class ResultController extends Controller
 
     function currentTermResult($students_id)
     {
-        $student = Student::find($students_id); $subjects = []; $term_id = 14;
+
+        $student = Student::find($students_id); $subjects = []; $term_id = 15;
         $term = Term::find($term_id); //currentActiveTerm();
         $sum = ResultSummary::where(['term_id' => $term->id, 'student_id' => $student->id])->first();
         foreach($sum->results as $res) {
+            $prev = $this->previosuTermSubjectScoreCum($student->id, $res->subject_id, $term_id);
+            $total = $this->calculateTotalScore($res->total, $prev);
+            $gradings = $this->subjectGrade($total);
             $data = [
                 'subject' => $res->subject->subject,
                 't1' => $res->t1,
                 't2' => $res->t2,
                 't3' => $res->t3,
                 'exam' => $res->exam,
-                'total' => $res->total,
-                'cla_avr' => $this->subject_classaverage($res->subject_id, $term_id),
-                'remark' => '',
+                'term_total' => $res->total,
+                'cla_avr' => number_format($this->subject_classaverage($res->subject_id, $term_id, $sum->class_id), 2),
                 'min' => '',
                 'max' => '',
+                'prev' => $prev,
+                'total' => $total,
+                'grade' => $gradings->grade,
+                'remark' => $gradings->remark,
             ];
-            $subjects[] = $data;
+            if($total > 0) { $subjects[] = $data; }
         }
 
+        $data = $student;
+        $data['results'] = $subjects;
+        $data['term'] = [
+            'term' => $sum->term->term,
+            'session' => $sum->term->session->session,
+            'close' => date('j M, Y',strtotime($sum->term->close)),
+            'resume' => date('j M, Y',strtotime($sum->term->resume)),
+        ];
+        $data['school'] = [
+            'name' => $student->school->name,
+            'address' => $student->school->address,
+            'phone' => $student->school->phone,
+            'logo' => $student->school->logo,
+        ];
 
-        return $subjects;
+        $data['others'] = [
+            'class' => $sum->class->class,
+            'class_average' => '',
+            'no_in_cla' => '',
+        ];
+
+        return response([
+            'data' => $data,
+        ], 200);
     }
 
 
-    function subject_classaverage($subject_id, $term_id) {
-        $count_student = Result::where(['term_id' => $term_id, 'subject_id' => $subject_id, ['total', '>', 0]])->count();
-        $total_score = Result::where(['term_id' => $term_id, 'subject_id' => $subject_id])->sum('total');
-        return $total_score/$count_student;
-    }
-
-    function previosuTermSubjectScoreCum($student_id, $term_id){
+    function subject_classaverage($subject_id, $term_id, $class_id) {
         $term = Term::find($term_id);
-        if($term->)
+        $terms = Term::where('session_id', $term->session_id)->get(['id', 'term']);
+        $cum = 0; $c = 0;
+        foreach($terms as $tm) {
+            $cum_total = $this->calculateSubAvr($tm->id, $subject_id, $class_id);
+            if($cum_total > 0) {
+                $cum += $cum_total;
+                $c++;
+            }
+        }
+
+        return  ($cum > 0) ? $cum/$c : $cum;
+    }
+
+    function subjectGrade($score) {
+        $rems = ResultSetup::where(['school_id' => 1])->first(['remarks']);
+        $rems = json_decode($rems->remarks);
+        foreach($rems as $rm) {
+            $sc = $rm->score;
+            if($score >= $sc){ return $rm; }
+        }
+    }
+
+    function calculateSubAvr($term_id, $subject_id, $class_id, $ret='avr') {
+        $res = Result::where(['term_id' => $term_id, 'subject_id' => $subject_id, 'class_id' => $class_id])->get(['id', 'student_id', 'total']);
+        $score = 0; $c = 0;
+        foreach($res as $r) {
+            if($r->total > 0) {
+                $c++;
+                $score += $r->total;
+            }
+        }
+        $val = ($score > 0) ? ($score/$c) : 0 ;
+        return $val;
+    }
 
 
+    // function totalClassAvr($term_id, $class, $student_id) {
+
+    // }
+
+    function previosuTermSubjectScoreCum($student_id, $subject_id, $term_id){
+        $term = Term::find($term_id); $scores = [];
+
+        if($term->term == 1) {
+            return 0;
+        }
+        $terms = Term::where('session_id', $term->session_id)->get(['id', 'term']);
+        foreach($terms as $tm) {
+            if($tm->term < $term->term) {
+                $res = Result::where(['term_id' => $tm->id, 'student_id' => $student_id, 'subject_id' => $subject_id])->first(['id', 'total']);
+                $scores[] = [
+                    'term' => $tm->term,
+                    'total' => $res->total ?? 0
+                ];
+            }
+        }
+        return $scores;
+    }
+
+    function calculateTotalScore($total, $prev)
+    {
+        if($prev == 0) { return $total; }
+        $i=0; $score = 0;
+        foreach($prev as $sc) {
+            if($sc['total'] > 0) { $i++; }
+            $score += $sc['total'];
+        }
+        $div = ($total > 0) ? $i+1 : $i ;
+        $total = $score + $total;
+        if($total == 0) { return 0; }
+        $t = $total / $div;
+        return $t;
     }
 
 
