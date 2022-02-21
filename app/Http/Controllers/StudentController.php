@@ -20,6 +20,15 @@ class StudentController extends Controller
     }
 
 
+    function fetchStudents()
+    {
+        $students = Student::with(['class:id,class', 'arm:id,arm'])->where(['school_id' => auth()->user()->school_id , 'status' => 1])->get(['id', 'surname', 'firstname', 'othername', 'sex', 'class_id', 'arm_id']);
+        return response([
+            'data' => $students
+        ], 200);
+    }
+
+
     function fetchAllStudentSummary(){
         $students = Student::with(['class:id,class', 'arm:id,arm'])->where('school_id', auth()->user()->school_id)->orderBy('id', 'desc')->paginate(50 ,['id', 'surname', 'firstname', 'class_id', 'arm_id', 'status', 'sex']);
         return response([

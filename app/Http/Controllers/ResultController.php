@@ -18,6 +18,45 @@ use Illuminate\Support\Facades\Validator;
 class ResultController extends Controller
 {
 
+
+    function updateMultipleComment(Request $request)
+    {
+        $val = Validator::make($request->all(), [
+            'data' => 'required',
+        ]);
+        if ($val->fails()){ return response(['errors'=>$val->errors()->all()], 422);}
+
+        foreach($request->data as $rem) {
+            ResultSummary::where('id', $rem['id'])->update([
+                'princpal_remark' => $rem['principal_remark'],
+                'teacher_remark' => $rem['teacher_remark'],
+            ]);
+        }
+
+        return response([
+            'message' => 'Result remarks updated scuessfully'
+        ]);
+    }
+
+
+    function updateComment(Request $request)
+    {
+        $val = Validator::make($request->all(), [
+            'result_id' => 'required|exists:result_summaries,id',
+            'principal_remark' => 'required',
+            'teacher_remark' => 'required',
+        ]);
+        if ($val->fails()){ return response(['errors'=>$val->errors()->all()], 422);}
+        ResultSummary::where('id', $request->result_id)->update([
+            'principal_remark' => $request->principal_remark,
+            'teacher_remark' => $request->teacher_remark
+        ]);
+        return response([
+            'message' => 'Result Remarks updated sucessfully'
+        ]);
+
+    }
+
     function subjectRemarkUpdate(Request $request)
     {
         $val = Validator::make($request->all(), [
@@ -42,56 +81,24 @@ class ResultController extends Controller
     }
 
 
-
-    function currentTermResult($students_id)
+    function OtherResultseueueue($result_id)
     {
+        // $sum = ResultSummary::find('id', $result_id);
+        return response([
+            'message' => 'oop'
+        ]);
+        // $data = $this->ResultRes(5, 3);
+        // return response([
+        //     'data' => $data
+        // ]);
+    }
 
-        $student = Student::find($students_id); $subjects = []; $term_id = 15;
-        $term = Term::find($term_id); //currentActiveTerm();
-        $sum = ResultSummary::where(['term_id' => $term->id, 'student_id' => $student->id])->first();
-        foreach($sum->results as $res) {
-            $prev = $this->previosuTermSubjectScoreCum($student->id, $res->subject_id, $term_id);
-            $total = $this->calculateTotalScore($res->total, $prev);
-            $gradings = $this->subjectGrade($total);
-            $data = [
-                'subject' => $res->subject->subject,
-                't1' => $res->t1,
-                't2' => $res->t2,
-                't3' => $res->t3,
-                'exam' => $res->exam,
-                'term_total' => $res->total,
-                'cla_avr' => number_format($this->subject_classaverage($res->subject_id, $term_id, $sum->class_id), 2),
-                'min' => '',
-                'max' => '',
-                'prev' => $prev,
-                'total' => $total,
-                'grade' => $gradings->grade,
-                'remark' => $gradings->remark,
-            ];
-            if($total > 0) { $subjects[] = $data; }
-        }
 
-        $data = $student;
-        $data['results'] = $subjects;
-        $data['term'] = [
-            'term' => $sum->term->term,
-            'session' => $sum->term->session->session,
-            'close' => date('j M, Y',strtotime($sum->term->close)),
-            'resume' => date('j M, Y',strtotime($sum->term->resume)),
-        ];
-        $data['school'] = [
-            'name' => $student->school->name,
-            'address' => $student->school->address,
-            'phone' => $student->school->phone,
-            'logo' => $student->school->logo,
-        ];
 
-        $data['others'] = [
-            'class' => $sum->class->class,
-            'class_average' => '',
-            'no_in_cla' => '',
-        ];
-
+    function currentTermResult($student_id, $term_id=0)
+    {
+        if($term_id == 0) { $term_id = currentActiveTerm()->id; }
+        $data = $this->ResultRes($term_id, $student_id);
         return response([
             'data' => $data,
         ], 200);
@@ -458,4 +465,69 @@ class ResultController extends Controller
             'data' => $data
         ]) ;
     }
+
+
+
+    function ResultRes($term_id, $student_id)
+    {
+        $term = Term::find($term_id);
+        $student = Student::find($student_id); $subjects = []; $term_id = currentActiveTerm()->id;
+
+        @$sum = ResultSummary::where(['term_id' => $term->id, 'student_id' => $student->id])->first();
+        if(!$sum) { return response(['message' => 'No result Found'], 404); }
+        foreach($sum->results as $res) {
+            $prev = $this->previosuTermSubjectScoreCum($student->id, $res->subject_id, $term_id);
+            $total = $this->calculateTotalScore($res->total, $prev);
+            $gradings = $this->subjectGrade($total);
+            $data = [
+                'subject' => $res->subject->subject,
+                't1' => $res->t1,
+                't2' => $res->t2,
+                't3' => $res->t3,
+                'exam' => $res->exam,
+                'term_total' => $res->total,
+                'cla_avr' => number_format($this->subject_classaverage($res->subject_id, $term_id, $sum->class_id), 2),
+                'min' => '',
+                'max' => '',
+                'prev' => $prev,
+                'total' => $total,
+                'grade' => $gradings->grade,
+                'remark' => $gradings->remark,
+            ];
+            if($total > 0) { $subjects[] = $data; }
+        }
+
+        $data = $student;
+        $data['results'] = $subjects;
+        $data['term'] = [
+            'term' => $sum->term->term,
+            'session' => $sum->term->session->session,
+            'close' => date('j M, Y',strtotime($sum->term->close)),
+            'resume' => date('j M, Y',strtotime($sum->term->resume)),
+        ];
+        $data['school'] = [
+            'name' => $student->school->name,
+            'address' => $student->school->address,
+            'phone' => $student->school->phone,
+            'logo' => $student->school->logo,
+        ];
+
+        $data['others'] = [
+            'class' => $sum->class->class,
+            'class_average' => '',
+            'no_in_cla' => '',
+            'result_id' => $sum->id,
+            'principal_remark' => $sum->principal_remark,
+            'teacher_remark' => $sum->teacher_remark,
+        ];
+
+
+        return $data;
+    }
+
+
 }
+
+
+
+

@@ -11,6 +11,7 @@ use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\MiscellaneousController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\TranscriptController;
 use App\Models\School;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -143,6 +144,7 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::post('/create_student_profile', [StudentController::class, 'createStudentProfile']);
     Route::get('/fetch_recently_registered_student', [StudentController::class, 'fetchStudentL100']);
     Route::get('/get_all_student', [StudentController::class, 'fetchAllStudentSummary']);
+    Route::get('/fetch_students', [StudentController::class, 'fetchStudents']);
     Route::get('/search_student/{q}', [StudentController::class, 'searchStudent']);
     Route::get('/get_student/{student_id}', [StudentController::class, 'getStudent']);
     Route::get('/student/fee_sum/{student_id}/{term_id?}', [BillController::class, 'fetchTermFeeSummary']);
@@ -153,8 +155,6 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::post('/student/update_basic_info', [StudentController::class, 'updateBasicInfo']);
 
 
-
-    // students routes are yet to be added and tested
 
 
 
@@ -223,7 +223,15 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::get('/ca', [ResultController::class, 'Ca']);
     Route::get('/results/{student_id}', [ResultController::class, 'studentResults']);
 
-Route::get('/result/{student_id}', [ResultController::class, 'currentTermResult']);
+    Route::get('/result/{student_id}/{term?}', [ResultController::class, 'currentTermResult']);
+
+    Route::post('/result/update_remark', [ResultController::class, 'updateComment']);
+
+    // Route::get('/result/viewer/{result_id}', [TranscriptController::class, 'Trans']);
+
+
+
+
 
 
 
