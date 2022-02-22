@@ -486,7 +486,7 @@ class ResultController extends Controller
                 't3' => $res->t3,
                 'exam' => $res->exam,
                 'term_total' => $res->total,
-                'cla_avr' => number_format($this->subject_classaverage($res->subject_id, $term_id, $sum->class_id), 2),
+                'cla_avr' => $this->subject_classaverage($res->subject_id, $term_id, $sum->class_id),
                 'min' => '',
                 'max' => '',
                 'prev' => $prev,
@@ -494,7 +494,7 @@ class ResultController extends Controller
                 'grade' => $gradings->grade,
                 'remark' => $gradings->remark,
             ];
-            if($total > 0) { $subjects[] = $data; }
+            if($res->total > 0) { $subjects[] = $data; }
         }
 
         $data = $student;

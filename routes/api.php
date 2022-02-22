@@ -227,7 +227,7 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
 
     Route::post('/result/update_remark', [ResultController::class, 'updateComment']);
 
-    // Route::get('/result/viewer/{result_id}', [TranscriptController::class, 'Trans']);
+    Route::get('/viewer/result/{result_id}', [TranscriptController::class, 'Trans']);
 
 
 
