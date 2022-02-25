@@ -9,6 +9,24 @@ use Illuminate\Http\Request;
 
 class TranscriptController extends ResultController
 {
+
+
+
+    function classTermResult($class_id)
+    {
+        $term = currentActiveTerm(); $data = [];
+
+        $class_res = ResultSummary::where(['class_id' => $class_id, 'term_id' => $term->id])->get();
+
+        foreach($class_res as $sum) {
+            $res = $this->ResultRes($term->id, $sum->student_id);
+            $data[] = $res;
+        }
+
+        return response([
+            'data' => $data
+        ], 200);
+    }
     function Trans($result_id)
     {
 
