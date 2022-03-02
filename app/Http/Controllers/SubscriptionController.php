@@ -23,10 +23,18 @@ class SubscriptionController extends Controller
     }
 
 
-    function S()
+    function renewalHistory()
     {
-        $sub = Subscription::where(['school_id' => auth()->user()->id])->paginate(25);
+        $sub = Subscription::with(['user:id,name'])->where(['school_id' => auth()->user()->id, 'type' => 1 ])->paginate(25);
+        return response([
+            'data' => $sub
+        ], 200);
+    }
 
+
+    function slotPurchaseHistory()
+    {
+        $sub = Subscription::with(['user:id,name'])->where(['school_id' => auth()->user()->school_id, ['type', '>', 1] ])->orderby('id', 'desc')->limit(25)->get();
         return response([
             'data' => $sub
         ], 200);
@@ -65,6 +73,7 @@ class SubscriptionController extends Controller
 
             $ck_term = Term::where(['school_id' => $user->school_id, 'status' => 1])->count();
             $type = ($ck_term == 0) ? 3 : 2 ;
+            $message = ($ck_term == 0) ? 'Term Activated Sucessfully' : 'Slot was sucessfully purchased' ;
             Subscription::create([
                 'school_id' => $user->school_id,
                 'session_id' => Term::find($request->term_id)->session_id,
@@ -74,7 +83,9 @@ class SubscriptionController extends Controller
                 'active' => Student::where(['school_id' => $user->school_id, 'status' => 0])->count(),
                 'slots' => $request->slots,
                 'amount' => $amount,
-                'type' => $type
+                'type' => $type,
+                'user_id' => $user->id,
+                'trno' => $trno,
             ]);
 
             if($type == 3) {
@@ -85,7 +96,7 @@ class SubscriptionController extends Controller
             }
 
             return response([
-                'message' => 'Slot was sucessfully purchased'
+                'message' => $message
             ], 200);
 
         }
@@ -106,13 +117,25 @@ class SubscriptionController extends Controller
 
     function fetchBalance()
     {
-        $res = Http::get(env('LINK').'?balance='.auth()->user()->school->live_id);
-        return $res;
+        $live_id = auth()->user()->school->live_id;
+        if($live_id == 0) {
+            return response(['balance' => 0]);
+        }
+        $res = Http::get(env('LINK').'?balance='.$live_id);
+        if(!$res['live_id']){
+            return response([
+                'message' => 'Error'
+            ], 500);
+        }
+        return response([
+            'id' => $res['live_id'],
+            'balance' => $res['balance']
+        ], 200);
     }
 
 
     function availbaleSlots() {
-        $total = Subscription::where(['school_id' => auth()->user()->school_id, 'status' => 2])->orWhere('status' , 3)->sum('slots');
+        $total = Subscription::where(['school_id' => auth()->user()->school_id, ['type', '>' , 1] ])->sum('slots');
         $used = Student::where(['school_id' => auth()->user()->school_id])->count();
         return response([
             'total' => $total,

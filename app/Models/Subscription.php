@@ -11,7 +11,7 @@ class Subscription extends Model
 
 
     protected $fillable = [
-        'school_id', 'session_id', 'term_id', 'pack', 'students', 'active', 'amount', 'type', 'user_id', 'slots'
+        'school_id', 'session_id', 'term_id', 'pack', 'students', 'active', 'amount', 'type', 'user_id', 'slots', 'trno'
     ];
 
 

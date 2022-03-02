@@ -263,6 +263,8 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::get('/available_slots', [SubscriptionController::class, 'availbaleSlots']);
     Route::get('/wallet_balance', [SubscriptionController::class, 'fetchBalance']);
     Route::post('/purchase_slot', [SubscriptionController::class, 'purchaseSlots']);
+    Route::post('/slot/history', [SubscriptionController::class, 'slotPurchaseHistory']);
+    Route::post('/renewal/history', [SubscriptionController::class, 'renewalHistory']);
 
 
 
