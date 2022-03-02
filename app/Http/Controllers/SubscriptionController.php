@@ -74,9 +74,10 @@ class SubscriptionController extends Controller
             $ck_term = Term::where(['school_id' => $user->school_id, 'status' => 1])->count();
             $type = ($ck_term == 0) ? 3 : 2 ;
             $message = ($ck_term == 0) ? 'Term Activated Sucessfully' : 'Slot was sucessfully purchased' ;
+            $term = Term::find($request->term_id);
             Subscription::create([
                 'school_id' => $user->school_id,
-                'session_id' => Term::find($request->term_id)->session_id,
+                'session_id' => $term->session_id,
                 'term_id' => $request->term_id,
                 'pack' => $request->pack,
                 'students' => Student::where(['school_id' => $user->school_id])->count(),
@@ -93,6 +94,13 @@ class SubscriptionController extends Controller
                     'paid' => 1,
                     'status' => 1,
                 ]);
+
+                return response([
+                    'message' => $message,
+                    'term' => $term
+                ], 200);
+
+
             }
 
             return response([
