@@ -11,6 +11,7 @@ use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\MiscellaneousController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TranscriptController;
 use App\Models\School;
 use App\Models\User;
@@ -255,5 +256,20 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
 
 
 
-});
+    /////sub subscription routes
 
+    Route::post('/link/wallet', [SubscriptionController::class, 'walletLinker']);
+    Route::get('/linked_wallet', [SubscriptionController::class, 'linkedWallets']);
+    Route::get('/available_slots', [SubscriptionController::class, 'availbaleSlots']);
+    Route::get('/wallet_balance', [SubscriptionController::class, 'fetchBalance']);
+    Route::post('/purchase_slot', [SubscriptionController::class, 'purchaseSlots']);
+
+
+
+
+
+
+
+
+
+});

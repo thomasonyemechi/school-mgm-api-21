@@ -10,7 +10,7 @@ class School extends Model
     use HasFactory;
 
     protected $fillable = [
-        'slug', 'name', 'email', 'address', 'phone', 'alternate_phone', 'website', 'motto', 'logo', 'bussiness_id',
+        'live_id' ,'slug', 'name', 'email', 'address', 'phone', 'alternate_phone', 'website', 'motto', 'logo', 'bussiness_id',
     ];
 
     function users()
@@ -72,6 +72,18 @@ class School extends Model
     function result_setup()
     {
         return $this->hasOne(ResultSetup::class, 'school_id');
+    }
+
+
+    function wallets()
+    {
+        return $this->hasMany(WalletLinks::class, 'school_id');
+    }
+
+
+    function subcriptions()
+    {
+        return $this->hasMany(Subscription::class, 'school_id');
     }
 
 }
