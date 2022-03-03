@@ -8,11 +8,52 @@ use App\Models\Guardian;
 use App\Models\Payment;
 use App\Models\SetSubject;
 use App\Models\Student;
+use App\Models\Subject;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class MiscellaneousController extends Controller
 {
     //
+
+
+    function dashboard()
+    {
+
+        $school_id = auth()->user()->school_id;
+        $term = currentActiveTerm();
+
+        $classes = ClassCore::where('school_id', $school_id)->get(); $pay_chart = [];
+
+        foreach($classes as $cla){
+            $data = [
+                'class' => $cla,
+                'payment' => Payment::where(['school_id' => $school_id, 'term_id' => $term->id, 'type' => 5, 'class_id' => $cla->id ])->sum('total')
+            ];
+            $pay_chart[] = $data;
+        }
+
+
+        $data = [
+            'students' => Student::where(['school_id' => $school_id])->count(),
+            'active_students' => Student::where(['school_id' => $school_id, 'status' => 1])->count(),
+            'ubjects' => Subject::where(['school_id' => $school_id])->count(),
+            'classes' => ClassCore::where('school_id' , $school_id)->count(),
+            'subject_teachers' => SetSubject::where('school_id' , $school_id)->count(),
+            'staffs' => User::where('school_id', $school_id)->count(),
+            'active_staffs' => User::where(['school_id' => $school_id, 'status' => 1])->count(),
+            'assigned_fee' => Payment::where(['school_id' => $school_id, 'term_id' => $term->id, 'type' => 1 ])->sum('total'),
+            'reveived_payment' => Payment::where(['school_id' => $school_id, 'term_id' => $term->id, 'type' => 5 ])->sum('total'),
+            'pay_chart' => $pay_chart,
+            'recently_registered' => Student::with(['class:id,class', 'arm:id,arm'])->
+            where(['school_id' => $school_id])->orderby('id', 'desc')->limit(10)->get(),
+            
+
+        ];
+    }
+
+
+
     function fetchParentClassArm()
     {
         $school_id = auth()->user()->school_id;

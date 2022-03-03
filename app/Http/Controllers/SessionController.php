@@ -77,7 +77,7 @@ class SessionController extends Controller
             'term_id' => 'required|exists:terms,id',
         ]);
         if ($val->fails()){ return response(['errors'=>$val->errors()->all()], 422);}
-        $term = Term::find($request->term_id);
+        $term = Term::with(['session:id,session'])->find($request->term_id);
         if($term->paid == 0){
             return response(['message' => 'You have not subscribe for this term'], 405);
         }
@@ -85,7 +85,7 @@ class SessionController extends Controller
         $term->update([
             'status' => 1
         ]);
-        return response(['message' => 'Term activated sucessfully', 'status' => true], 200);
+        return response(['message' => 'Term activated sucessfully', 'term' => $term], 200);
     }
 
 
