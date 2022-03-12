@@ -14,9 +14,6 @@ use Illuminate\Http\Request;
 
 class MiscellaneousController extends Controller
 {
-    //
-
-
     function dashboard()
     {
 
@@ -47,7 +44,7 @@ class MiscellaneousController extends Controller
             'pay_chart' => $pay_chart,
             'recently_registered' => Student::with(['class:id,class', 'arm:id,arm'])->
             where(['school_id' => $school_id])->orderby('id', 'desc')->limit(10)->get(),
-            
+
 
         ];
     }
