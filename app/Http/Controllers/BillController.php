@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Validator;
 
 class BillController extends Controller
 {
-    // id type amount 
+    // id type amount
 
     function getStartAndEndDate($week, $year) {
         $dto = new DateTime();
@@ -255,7 +255,7 @@ class BillController extends Controller
             $payment->update([
                 'amount' => $pay['amount'],
                 'discount' => $dis,
-                'total' => $pay['amount'] - $dis
+                'total' => -$pay['amount'] - $dis
             ]);
             $data[] = $dis;
         }
@@ -280,7 +280,7 @@ class BillController extends Controller
         $payment->update([
             'amount' => $request->amount,
             'discount' => $request->discount,
-            'total' => $request->amount-$request->discount
+            'total' => -$request->amount-$request->discount
         ]);
 
         return response([

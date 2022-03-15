@@ -267,5 +267,10 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::get('/renewal/history', [SubscriptionController::class, 'renewalHistory']);
     Route::post('/renew', [SubscriptionController::class, 'renewSubscription']);
     Route::get('/renewal/spot/{term_id}', [SubscriptionController::class, 'subscribeSpot']);
-    
+
+
+
+    Route::get('/dashboard/param', [MiscellaneousController::class, 'dashboard']);
+
+
 });

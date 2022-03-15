@@ -14,8 +14,8 @@ class FeeController extends Controller
 
     function feeRequirements() {
         $data = [
-            'classes' => ClassCore::orderBy('index', 'asc')->get(['id', 'class']),
-            'fees' => FeeCategory::orderBy('id', 'desc')->get(['id', 'fee'])
+            'classes' => ClassCore::where('school_id', auth()->user()->school_id)->orderBy('index', 'asc')->get(['id', 'class']),
+            'fees' => FeeCategory::where('school_id', auth()->user()->school_id)->orderBy('id', 'desc')->get(['id', 'fee'])
         ];
         return response([
             'data' => $data

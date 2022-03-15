@@ -14,17 +14,35 @@ use Illuminate\Http\Request;
 
 class MiscellaneousController extends Controller
 {
+
+
+
+    function promoteStudent(Request $request)
+    {
+        $data = $request->data;
+        foreach($data as $stu)
+        {
+            $student = Student::with(['class'])->find($stu);
+            $next_class = ClassCore::where(['school_id' => $student->school_id, ['index', '>', $student->class->index] ])->first() ?? 'graduated';
+            $student->update([
+                'class' => $next_class
+            ]);
+        }
+    }
+
+
     function dashboard()
     {
 
         $school_id = auth()->user()->school_id;
         $term = currentActiveTerm();
 
-        $classes = ClassCore::where('school_id', $school_id)->get(); $pay_chart = [];
+        $classes = ClassCore::where('school_id', $school_id)->orderBy('class', 'asc')->get(); $pay_chart = [];
 
         foreach($classes as $cla){
             $data = [
                 'class' => $cla,
+                'fee' => abs(Payment::where(['school_id' => $school_id, 'term_id' => $term->id, 'type' => 1, 'class_id' => $cla->id ])->sum('total')),
                 'payment' => Payment::where(['school_id' => $school_id, 'term_id' => $term->id, 'type' => 5, 'class_id' => $cla->id ])->sum('total')
             ];
             $pay_chart[] = $data;
@@ -33,20 +51,19 @@ class MiscellaneousController extends Controller
 
         $data = [
             'students' => Student::where(['school_id' => $school_id])->count(),
-            'active_students' => Student::where(['school_id' => $school_id, 'status' => 1])->count(),
-            'ubjects' => Subject::where(['school_id' => $school_id])->count(),
+            'subjects' => Subject::where(['school_id' => $school_id])->count(),
             'classes' => ClassCore::where('school_id' , $school_id)->count(),
+            'guardians' => Guardian::where('school_id' , $school_id)->count(),
             'subject_teachers' => SetSubject::where('school_id' , $school_id)->count(),
             'staffs' => User::where('school_id', $school_id)->count(),
-            'active_staffs' => User::where(['school_id' => $school_id, 'status' => 1])->count(),
-            'assigned_fee' => Payment::where(['school_id' => $school_id, 'term_id' => $term->id, 'type' => 1 ])->sum('total'),
+            'assigned_fee' => abs(Payment::where(['school_id' => $school_id, 'term_id' => $term->id, 'type' => 1 ])->sum('total')),
             'reveived_payment' => Payment::where(['school_id' => $school_id, 'term_id' => $term->id, 'type' => 5 ])->sum('total'),
             'pay_chart' => $pay_chart,
-            'recently_registered' => Student::with(['class:id,class', 'arm:id,arm'])->
-            where(['school_id' => $school_id])->orderby('id', 'desc')->limit(10)->get(),
-
-
+            'recently_registered' => Student::with(['class:id,class'])->where(['school_id' => $school_id])->orderby('id', 'desc')->limit(8)->get(['id', 'firstname', 'surname', 'photo', 'class_id']),
         ];
+
+
+        return response($data, 200);
     }
 
 
