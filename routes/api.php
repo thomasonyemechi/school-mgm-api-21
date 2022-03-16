@@ -271,6 +271,10 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
 
 
     Route::get('/dashboard/param', [MiscellaneousController::class, 'dashboard']);
+    Route::post('/promote_student', [MiscellaneousController::class, 'promoteStudent']);
+    Route::post('/demote_student', [MiscellaneousController::class, 'demoteStudent']);
+
+
 
 
 });

@@ -15,6 +15,22 @@ use Illuminate\Http\Request;
 class MiscellaneousController extends Controller
 {
 
+    function demoteStudent(Request $request)
+    {
+        $data = $request->data;
+        foreach($data as $stu)
+        {
+            $student = Student::with(['class'])->find($stu);
+            $prev_class = ClassCore::where(['school_id' => $student->school_id, ['index', '<', $student->class->index] ])->orderBy('index', 'desc')->first()->id;
+            if(!$prev_class) { $prev_class = $student->class; }
+            $student->update([
+                'class_id' => $prev_class
+            ]);
+        }
+        return response([
+            'message' => 'Students has been demoted to the previous class'
+        ], 200);
+    }
 
 
     function promoteStudent(Request $request)
@@ -23,11 +39,15 @@ class MiscellaneousController extends Controller
         foreach($data as $stu)
         {
             $student = Student::with(['class'])->find($stu);
-            $next_class = ClassCore::where(['school_id' => $student->school_id, ['index', '>', $student->class->index] ])->first() ?? 'graduated';
+            $next_class = ClassCore::where(['school_id' => $student->school_id, ['index', '>', $student->class->index] ])->orderBy('index', 'asc')->first()->id ?? 0 ;
             $student->update([
-                'class' => $next_class
+                'class_id' => $next_class
             ]);
         }
+
+        return response([
+            'message' => 'Students has been promoted to the next class'
+        ], 200);
     }
 
 
@@ -161,7 +181,8 @@ class MiscellaneousController extends Controller
         $students = Student::with(['arm:id,arm'])->
         where(['class_id' => $class_id])->paginate(100, ['id', 'arm_id', 'surname', 'firstname', 'arm_id', 'sex', 'status', 'created_at']);
         return response([
-            'data' => $students
+            'data' => $students,
+            'class' => ClassCore::find($class_id)
         ], 200);
     }
 }
