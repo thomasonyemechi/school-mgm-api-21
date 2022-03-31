@@ -15,6 +15,22 @@ class SchoolController extends StaffController
 
 
 
+    function updateSchoolPicture(Request $request)
+    {
+        $school = School::find($request->school_id);
+        if($request->hasFile('logo')){
+            $logo = $request->file('logo');
+            $extension = $logo->getClientOriginalExtension();
+            $name = 'assets/img/schools/'.rand(11111,9999999).$school->slug.'.'.$extension;
+            move_uploaded_file($logo, $name);
+
+            $school->update([
+                'logo' => $name ?? $school->logo,
+            ]);
+        }
+    }
+
+
     function updateSchoolInformation(Request $request)
     {
         $val = Validator::make($request->all(), [
@@ -30,13 +46,7 @@ class SchoolController extends StaffController
 
         $slug = Str::slug($request->name);
 
-        if($request->hasFile('logo')){
-            $logo = $request->file('logo');
-            $extension = $logo->getClientOriginalExtension();
-            $name = 'assets/img/schools/'.rand(11111,9999999).$slug.'.'.$extension;
-            move_uploaded_file($logo, $name);
-            @unlink($school->logo);
-        }
+
         $new_school = School::where('id', $request->school_id)->update([
             'name' => $request->name,
             'slug' => $slug,
@@ -45,7 +55,6 @@ class SchoolController extends StaffController
             'motto' => $request->motto ?? $school->motto,
             'website' => $request->website ?? $school->website,
             'alternate_phone' => $request->alternate_phone ?? $school->alternate_phone,
-            'logo' => $name ?? $school->logo,
         ]);
         return response([
             'data' => School::find($request->school_id),
@@ -104,4 +113,5 @@ class SchoolController extends StaffController
         ]);
         return;
     }
+
 }
