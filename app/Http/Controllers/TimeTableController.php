@@ -36,6 +36,7 @@ class TimeTableController extends Controller
         TimeTableSetup::create([
             'school_id' => $school_id,
             'title' => $request->title,
+            'periods' => 5,
             'data' => $request->data
         ]);
 
