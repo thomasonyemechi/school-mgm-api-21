@@ -15,8 +15,8 @@ class CreateTimeTableSetupsTable extends Migration
     {
         Schema::create('time_table_setups', function (Blueprint $table) {
             $table->id();
-            $table->intger('school_id');
-            $table->intger('periods');
+            $table->integer('school_id');
+            $table->integer('periods');
             $table->string('title');
             $table->text('data');
             $table->timestamps();
