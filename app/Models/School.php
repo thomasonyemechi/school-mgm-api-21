@@ -86,4 +86,9 @@ class School extends Model
         return $this->hasMany(Subscription::class, 'school_id');
     }
 
+    function time_table_setups()
+    {
+        return $this->hasMany(TimeTableSetup::class, 'school_id');
+    }
+
 }
