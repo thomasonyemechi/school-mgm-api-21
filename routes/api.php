@@ -12,6 +12,7 @@ use App\Http\Controllers\MiscellaneousController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\TimeTableController;
 use App\Http\Controllers\TranscriptController;
 use App\Models\School;
 use App\Models\User;
@@ -235,4 +236,12 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::get('/dashboard/param', [MiscellaneousController::class, 'dashboard']);
     Route::post('/promote_student', [MiscellaneousController::class, 'promoteStudent']);
     Route::post('/demote_student', [MiscellaneousController::class, 'demoteStudent']);
+
+
+    //time table
+
+    Route::post('/time_table_setup/add', [TimeTableController::class, 'addTimeTableSetup']);
+    Route::get('/time_table_setup/fetch', [TimeTableController::class, 'fetchTimeTableSetups']);
+    Route::get('/time_table/requirement', [TimeTableController::class, 'fetchTimetableRquirements']);
+
 });

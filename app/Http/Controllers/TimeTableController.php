@@ -26,7 +26,7 @@ class TimeTableController extends Controller
 
         $total_periods = count(explode(',', $request->data));
 
-        TimeTable::creat([
+        TimeTable::create([
             'school_id' => auth()->user()->school_id,
             'class_id' => $request->class_id,
             'setup_id' => $request->setup_id,
@@ -37,10 +37,9 @@ class TimeTableController extends Controller
 
     function fetchTimetableRquirements()
     {
-        $school = School::where('id', auth()->user()->school_id )->get();
+        $school = School::where('id', auth()->user()->school_id )->first(['id']);
         return response([
-            'classes' => $school->class,
-            'time_table_setups' => $school->time_table_setups,
+            'classes' => $school->classes,
             'subjects' => $school->subjects,
         ], 200);
     }
@@ -50,9 +49,23 @@ class TimeTableController extends Controller
     {
         $school_id = auth()->user()->school_id;
         $setups = TimeTableSetup::where('school_id', $school_id)->orderby('id', 'desc')->get();
+        $new_arr = [];
+        foreach($setups as $set){
+            $data = json_decode($set->data); $lessons = 0; $breaks = 0;
+            foreach($data as $dt){
+                if($dt->type == 1) { $lessons ++ ; }else { $breaks ++ ; }
+            }
+            $new_arr[] = [
+                'title' => $set->title,
+                'total_periods' => $set->periods,
+                'lesson_periods' => $lessons,
+                'break_periods' => $breaks,
+                'data' => $data
+            ];
+        }
         return response([
             'message' => '',
-            'data' => $setups
+            'data' => $new_arr
         ], 200);
     }
 
@@ -61,18 +74,17 @@ class TimeTableController extends Controller
     {
         $val = Validator::make($request->all(), [
             'title' => 'required|string',
-            'data' => 'required|string',
         ]);
         if ($val->fails()){ return response(['errors'=>$val->errors()->all()], 422);}
         $school_id = auth()->user()->school_id;
         $ck = TimeTableSetup::where(['title' => $request->title, 'school_id' => $school_id])->count();
-        if($ck > 0) { return response(['message' => 'This title already exists, try another'], 409); }
+        if($ck > 0) { return response(['message' => 'Setup for the title already exists, try another'], 409); }
 
         TimeTableSetup::create([
             'school_id' => $school_id,
             'title' => $request->title,
-            'periods' => 5,
-            'data' => $request->data
+            'periods' => $request->total_periods,
+            'data' => json_encode($request->periods)
         ]);
 
         return response(['message' => 'Setup created sucessfully'], 200);
