@@ -9,7 +9,7 @@ class TimeTable extends Model
 {
     use HasFactory;
 
-    protected $fillabe = [
+    protected $fillable = [
         'school_id', 'class_id', 'setup_id', 'periods', 'data'
     ];
 

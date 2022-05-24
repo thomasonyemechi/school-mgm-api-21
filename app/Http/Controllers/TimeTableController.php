@@ -21,18 +21,33 @@ class TimeTableController extends Controller
         ]);
         if ($val->fails()){ return response(['errors'=>$val->errors()->all()], 422);}
 
-        $ck = TimeTable::where(['class_id' => $request->class_id, 'setup_id' => $request->setup_id])->count();
-        if($ck > 0) { return response(['message' => 'Time table already exists for this class'], 409);  }
 
-        $total_periods = count(explode(',', $request->data));
+
+
+        // $ck = TimeTable::where(['class_id' => $request->class_id, 'setup_id' => $request->setup_id])->count();
+        // if($ck > 0) { return response(['message' => 'Time table already exists for this class'], 409);  }
+
+
+        $string = '';
+        foreach($request->periods as $per) {
+            $sub = $per['subject_id'];
+            for($i=1; $i <= $per['periods']; $i++){
+                $string .= $sub.',';
+            }
+        }
+        $total_periods = count(explode(',',$string))-1;
 
         TimeTable::create([
             'school_id' => auth()->user()->school_id,
             'class_id' => $request->class_id,
             'setup_id' => $request->setup_id,
             'periods' => $total_periods,
-            'data' => $request->data
+            'data' => $string
         ]);
+
+        return response([
+            'message' => 'Time table has been created sucessfully',
+        ], 200);
     }
 
     function fetchTimetableRquirements()
@@ -56,6 +71,7 @@ class TimeTableController extends Controller
                 if($dt->type == 1) { $lessons ++ ; }else { $breaks ++ ; }
             }
             $new_arr[] = [
+                'id' => $set->id,
                 'title' => $set->title,
                 'total_periods' => $set->periods,
                 'lesson_periods' => $lessons,
