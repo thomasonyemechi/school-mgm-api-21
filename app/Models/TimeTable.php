@@ -10,12 +10,17 @@ class TimeTable extends Model
     use HasFactory;
 
     protected $fillable = [
-        'school_id', 'class_id', 'setup_id', 'periods', 'data'
+        'school_id', 'class_id', 'setup_id', 'periods', 'data', 'title'
     ];
 
     function setup()
     {
         return $this->belongsTo(TimeTableSetup::class, 'setup_id');
+    }
+
+    function class()
+    {
+        return $this->belongsTo(ClassCore::class, 'class_id');
     }
 
 }

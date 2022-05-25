@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ClassCore;
 use App\Models\School;
+use App\Models\Subject;
 use App\Models\TimeTable;
 use App\Models\TimeTableSetup;
 use Illuminate\Http\Request;
@@ -12,6 +13,56 @@ use Illuminate\Support\Facades\Validator;
 
 class TimeTableController extends Controller
 {
+
+
+    function fetchTimeTableInfo($time_table_id)
+    {
+        $table = TimeTable::find($time_table_id);
+        $subjects = explode(',',$table->data);
+        $setup = $table->setup;
+        $day = ['Monday', 'Tuesday', 'Wednessday', 'Thursday', 'Friday'];
+        $new_arr = []; $i = 0;
+        foreach($day as $dy)
+        {
+
+            $data = json_decode($setup->data); $new_d = [];
+            foreach($data as $per){
+                $type = $per->type;
+
+                $new_d[] = [
+                    'index' => ($type == 1) ? $i : '' ,
+                    'type' => $type,
+                    'id' => ($type == 1) ? $subjects[$i] : 0 ,
+                    'subject' => ($type == 1) ? $this->findSubject($subjects[$i]) : 'Break' ,
+                    'from' => $per->from,
+                    'to' => $per->to,
+                ];
+                ($type == 1) ? $i++ : '';
+            }
+
+            $new_arr[] = [
+                'day' => $dy,
+                'period' => $new_d
+            ];
+        }
+
+        return response([
+            'id' => $table->id,
+            'title' => $table->title,
+            'class_id' => $table->class->id,
+            'class' => $table->class->class,
+            'periods' => $new_arr,
+        ]);
+
+
+
+
+    }
+
+    function findSubject($subject_id)
+    {
+        return Subject::find($subject_id)->subject;
+    }
 
     function addTimeTable(Request $request)
     {
@@ -35,14 +86,17 @@ class TimeTableController extends Controller
                 $string .= $sub.',';
             }
         }
-        $total_periods = count(explode(',',$string))-1;
-
+        $xplo = explode(',', $string);
+        $pop = array_pop($xplo);
+        shuffle($xplo);
+        $total_periods = count($xplo);
         TimeTable::create([
+            'title' => $request->title,
             'school_id' => auth()->user()->school_id,
             'class_id' => $request->class_id,
             'setup_id' => $request->setup_id,
             'periods' => $total_periods,
-            'data' => $string
+            'data' => implode(',',$xplo)
         ]);
 
         return response([
@@ -74,8 +128,8 @@ class TimeTableController extends Controller
                 'id' => $set->id,
                 'title' => $set->title,
                 'total_periods' => $set->periods,
-                'lesson_periods' => $lessons,
-                'break_periods' => $breaks,
+                'lesson_periods' => $lessons*5,
+                'break_periods' => $breaks*5,
                 'data' => $data
             ];
         }

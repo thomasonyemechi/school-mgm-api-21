@@ -244,5 +244,8 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::get('/time_table_setup/fetch', [TimeTableController::class, 'fetchTimeTableSetups']);
     Route::get('/time_table/requirement', [TimeTableController::class, 'fetchTimetableRquirements']);
     Route::post('/time_table/add', [TimeTableController::class, 'addTimeTable']);
-
+    Route::get('/time_table/{time_table_id}', [TimeTableController::class, 'fetchTimeTableInfo']);
 });
+
+Route::get('/time_table/{time_table_id}', [TimeTableController::class, 'fetchTimeTableInfo']);
+
