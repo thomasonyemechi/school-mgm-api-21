@@ -13,6 +13,49 @@ use Illuminate\Support\Facades\Validator;
 
 class TimeTableController extends Controller
 {
+    function todayTimeTables($day)
+    {
+
+    }
+
+    function timeTableSummary(Request $request)
+    {
+
+    }
+
+    function classTimeTables($class_id)
+    {
+
+    }
+
+    function swapSubjects(Request $request)
+    {
+        $val = Validator::make($request->all(), [
+            'time_table_id' => 'required|exists:time_tables,id',
+            'index_1' => 'required|integer',
+            'index_2' => 'required|integer',
+        ]);
+
+        if ($val->fails()){ return response(['errors'=>$val->errors()->all()], 422);}
+
+        $table = TimeTable::find($request->time_table_id);
+
+        $data = explode(',',$table->data);
+
+        $value_1 = $data[$request->index_1];
+        $value_2 = $data[$request->index_2];
+        $data[$request->index_2] = $value_1;
+        $data[$request->index_1] = $value_2;
+        $data = implode(',',$data);
+
+        $table->update([
+            'data' => $data
+        ]);
+
+        return response([
+            'message' => 'Subjects have bee swapped sucessfully'
+        ]);
+    }
 
 
     function fetchTimeTableInfo($time_table_id)
