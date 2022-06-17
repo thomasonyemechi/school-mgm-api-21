@@ -148,6 +148,7 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
     Route::post('/student/update_student_class', [StudentController::class, 'updateStudentClass']);
     Route::post('/student/update_authdetails', [StudentController::class, 'updateAuthdetails']);
     Route::post('/student/update_basic_info', [StudentController::class, 'updateBasicInfo']);
+    Route::post('/student/update_photo', [StudentController::class, 'updateStudentPhoto']);
 
     /*
         Fee Routes ..

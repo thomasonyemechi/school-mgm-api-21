@@ -12,6 +12,32 @@ use Illuminate\Support\Facades\Validator;
 class StudentController extends Controller
 {
 
+    function updateStudentPhoto(Request $request)
+    {
+        $val = Validator::make($request->all(), [
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'id' => 'required|exists:students,id'
+        ]);
+        if($val->fails()){ return response(['errors'=>$val->errors()->all()], 422);}
+
+        $student = Student::find($request->id);
+        $oldname = $student->photo;
+        if($request->hasFile('image')){
+            $img = $request->file('image');
+            $name = 'assets/img/students/'.$student->firstname.'_'.time().rand().'.'.$img->getClientOriginalExtension();
+            move_uploaded_file($img, $name);
+            if($oldname == 'assets/img/students/user.png') {} else { unlink($oldname); }
+        }
+        $student->update([
+            'photo' => $name
+        ]);
+
+        return response([
+            'message' => 'Profile picture has been change shcessfully',
+            'name' => $name
+        ], 200);
+    }
+
     function getStudent($student_id) {
         $student = Student::with(['guardian', 'arm:id,arm', 'class:id,class'])->find($student_id);
         return response([
@@ -30,7 +56,7 @@ class StudentController extends Controller
 
 
     function fetchAllStudentSummary(){
-        $students = Student::with(['class:id,class', 'arm:id,arm'])->where('school_id', auth()->user()->school_id)->orderBy('id', 'desc')->paginate(50 ,['id', 'surname', 'firstname', 'class_id', 'arm_id', 'status', 'sex']);
+        $students = Student::with(['class:id,class', 'arm:id,arm'])->where('school_id', auth()->user()->school_id)->orderBy('id', 'desc')->paginate(50 ,['id', 'surname', 'firstname', 'class_id', 'arm_id', 'status', 'sex', 'photo']);
         return response([
             'data' => $students
         ], 200);
