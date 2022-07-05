@@ -17,17 +17,27 @@ class SchoolController extends StaffController
 
     function updateSchoolPicture(Request $request)
     {
-        $school = School::find($request->school_id);
+        $val = Validator::make($request->all(), [
+            'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+        if ($val->fails()){ return response(['errors'=>$val->errors()->all()], 422);}
+
+        $school = auth()->user()->school;
         if($request->hasFile('logo')){
             $logo = $request->file('logo');
             $extension = $logo->getClientOriginalExtension();
             $name = 'assets/img/schools/'.rand(11111,9999999).$school->slug.'.'.$extension;
             move_uploaded_file($logo, $name);
+            @unlink('assets/img/schools/'.$school->logo);
 
             $school->update([
-                'logo' => $name ?? $school->logo,
+                'logo' => $name
             ]);
         }
+
+        return response([
+            'message' => 'Picture has been uploaded sucessfully'
+        ], 200);
     }
 
 

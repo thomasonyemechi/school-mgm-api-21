@@ -53,6 +53,10 @@ Route::group(['prefix'=>'control', 'as'=>'control.', 'middleware' => ['auth:api'
 
     Route::get('/registration_requirements', [MiscellaneousController::class, 'fetchParentClassArm']);
 
+    ///
+
+    Route::post('/school/updatelogo', [\App\Http\Controllers\SchoolController::class, 'updateSchoolPicture']);
+
 
 
 
